@@ -1,0 +1,7 @@
+[package]
+name = "rsqlite"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+lib_rsqlite = { path = "../lib_rsqlite" }

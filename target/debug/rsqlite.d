@@ -1,0 +1,1 @@
+/home/ale/Desktop/Ale/simple-rsqlite/target/debug/rsqlite: /home/ale/Desktop/Ale/simple-rsqlite/lib_rsqlite/src/btree.rs /home/ale/Desktop/Ale/simple-rsqlite/lib_rsqlite/src/lib.rs /home/ale/Desktop/Ale/simple-rsqlite/rsqlite/src/main.rs

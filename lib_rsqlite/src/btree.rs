@@ -79,7 +79,7 @@ impl PageNode {
     }
     pub fn from_bytes(data: &[u8]) -> Self {
         let page_count = usize::from_be_bytes(data[0..1].try_into().unwrap());
-        let is_root: bool = data[1] == 0;
+        let is_root: bool = data[1] != 0;
 
         todo!()
     }

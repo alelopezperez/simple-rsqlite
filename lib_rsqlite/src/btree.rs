@@ -1,4 +1,6 @@
-use std::{io::Read, usize};
+use core::panic;
+
+use crate::pager::Page;
 
 pub enum DataTypes {
     Text(String),
@@ -28,24 +30,40 @@ impl DataTypes {
             DataTypes::Null => vec![],
         }
     }
+
+    pub fn from_bytes(tipo: u8, data: &[u8]) -> Self {
+        match tipo {
+            0 => DataTypes::Text(String::from_utf8(data.to_vec()).unwrap()),
+            1 => DataTypes::Integer(i64::from_be_bytes(data.try_into().unwrap())),
+            2 => DataTypes::Real(f64::from_be_bytes(data.try_into().unwrap())),
+            3 => DataTypes::Blob(data.to_vec()),
+            4 => DataTypes::Null,
+            _ => panic!("WAIt"),
+        }
+    }
+}
+impl Data {
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.payload
+            .to_bytes()
+            .into_iter()
+            .chain(self.len.to_be_bytes())
+            .chain(std::iter::once(self.tipo))
+            .collect()
+    }
+
+    pub fn from_bytes(data: &[u8]) -> Self {
+        let tipo = u8::from_be_bytes(data[0..1].try_into().unwrap());
+        let len = usize::from_be_bytes(data[1..size_of::<usize>()].try_into().unwrap());
+        let payload = DataTypes::from_bytes(tipo, data);
+        Self { tipo, len, payload }
+    }
 }
 
 pub struct Data {
     pub tipo: u8,
     pub len: usize,
     pub payload: DataTypes,
-}
-
-impl Data {
-    pub fn to_bytes(&self) -> Vec<u8> {
-        let mut page = Vec::new();
-
-        page.push(self.tipo);
-        page.extend(self.len.to_be_bytes());
-        page.extend(self.payload.to_bytes());
-
-        page
-    }
 }
 
 const PAGE_NODE_HEADER_SIZE: u32 = usize::BITS / 8 + u8::BITS / 8 + u8::BITS / 8 + usize::BITS / 8;
@@ -58,6 +76,12 @@ impl PageNode {
             .chain(self.node.to_bytes())
             .chain(std::iter::once(self.is_root as u8))
             .collect()
+    }
+    pub fn from_bytes(data: &[u8]) -> Self {
+        let page_count = usize::from_be_bytes(data[0..1].try_into().unwrap());
+        let is_root: bool = data[1] == 0;
+
+        todo!()
     }
 }
 pub struct PageNode {
@@ -102,9 +126,9 @@ impl InteriorNode {
 }
 
 pub struct InteriorNode {
-    num_keys: usize,
-    keys: [Option<u64>; 3],
-    page_offset: [Option<usize>; 4],
+    pub num_keys: usize,
+    pub keys: [Option<u64>; 3],
+    pub page_offset: [Option<usize>; 4],
 }
 
 pub struct KeyValuePair {
@@ -115,21 +139,18 @@ pub struct KeyValuePair {
 
 impl KeyValuePair {
     pub fn to_bytes(&self) -> Vec<u8> {
-        let mut bytes = Vec::new();
-
-        bytes
+        self.row
+            .iter()
+            .flat_map(|r| r.to_bytes())
+            .chain(self.key.to_be_bytes())
+            .chain(self.row_len.to_be_bytes())
+            .collect()
     }
 }
 
 impl LeafNode {
     pub fn to_bytes(&self) -> Vec<u8> {
-        let mut bytes = Vec::new();
-
-        for kv in self.kv_pairs.iter() {
-            bytes.extend(kv.to_bytes())
-        }
-
-        bytes
+        self.kv_pairs.iter().flat_map(|l| l.to_bytes()).collect()
     }
 }
 pub struct LeafNode {

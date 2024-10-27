@@ -1,14 +1,21 @@
-use std::fs::File;
-use std::io::{Read, Write};
-
-use lib_rsqlite::btree::{Node, PageNode};
+use lib_rsqlite::btree::{InteriorNode, Node, PageNode};
 
 fn main() {
-    let page = PageNode {
-        table_header_info: None,
-        is_root: true,
-        node_type: todo!(),
-        payload_size: todo!(),
-        node: todo!(),
+    let interior_node = InteriorNode {
+        num_keys: 3,
+        keys: [Some(1), Some(2), Some(3)],
+        page_offset: [Some(2), Some(3), Some(4), Some(5)],
     };
+    let node = Node::InteriorNode(interior_node);
+    let page_node = PageNode {
+        page_count: 1,
+        is_root: true,
+        node_type: 0,
+        payload_size: 10,
+        node: node,
+    };
+
+    let write_bytes = page_node.to_bytes();
+
+    println!("size {}", write_bytes.len())
 }

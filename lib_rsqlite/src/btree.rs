@@ -75,6 +75,7 @@ impl PageNode {
             .chain(self.payload_size.to_be_bytes())
             .chain(self.node.to_bytes())
             .chain(std::iter::once(self.is_root as u8))
+            .chain(self.node_type.to_be_bytes())
             .collect()
     }
     pub fn from_bytes(data: &[u8]) -> Self {

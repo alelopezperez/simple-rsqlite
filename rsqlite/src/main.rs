@@ -1,4 +1,7 @@
-use lib_rsqlite::btree::{InteriorNode, Node, PageNode};
+use lib_rsqlite::{
+    btree::{InteriorNode, Node, PageNode},
+    pager::Page,
+};
 
 fn main() {
     let interior_node = InteriorNode {
@@ -15,7 +18,7 @@ fn main() {
         node: node,
     };
 
-    let write_bytes = page_node.to_bytes();
+    let page = Page::from(page_node);
 
-    println!("size {}", write_bytes.len())
+    println!("size");
 }

@@ -1,24 +1,33 @@
-use lib_rsqlite::{
-    btree::{InteriorNode, Node, PageNode},
-    pager::Page,
-};
+use lib_rsqlite::btree::{BTree, BTreeHeader, Cell, DataType, LeafCell, Record, RecordFomatHeader};
 
 fn main() {
-    let interior_node = InteriorNode {
-        num_keys: 3,
-        keys: [Some(1), Some(2), Some(3)],
-        page_offset: [Some(2), Some(3), Some(4), Some(5)],
+    let id_input = DataType::Integer(5);
+    let num_input = DataType::Integer(10);
+
+    let body_record = vec![id_input, num_input];
+    let record_header = RecordFomatHeader {
+        header_size: 3,
+        serialtype: vec![0, 0],
     };
-    let node = Node::InteriorNode(interior_node);
-    let page_node = PageNode {
-        page_count: 1,
-        is_root: true,
-        node_type: 0,
-        payload_size: 10,
-        node: node,
+    let record = Record {
+        header: record_header,
+        body: body_record,
     };
 
-    let page = Page::from(page_node);
+    let leaf_cell = Cell::LeafCell(LeafCell {
+        rowid: 5,
+        record_payload_bytes_size: 3,
+        payload: record,
+    });
 
-    println!("size");
+    let btree_header = BTreeHeader {
+        node_type: 1,
+        cell_number: 1,
+    };
+
+    let btree = BTree {
+        header: btree_header,
+        cell_pointer_offsets_arr: vec![1],
+        arr_cell: vec![leaf_cell],
+    };
 }
